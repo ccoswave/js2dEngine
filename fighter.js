@@ -59,7 +59,7 @@ function keyup(evt) {
   if (evt.key == 'Control') {k_ctrl = false}}
 window.addEventListener('keyup',keyup,false)
 
-
+// sounds
 var audio = new Audio('wntic.wav');
 
 
@@ -97,15 +97,16 @@ Drone.prototype.update = function () {
     this.y--}
   if (this.y<this.tgt.y) {
     this.y++}
-  if (this.x>this.tgt.x) {
+  if (this.x-32>this.tgt.x) {
     this.x--}
-  if (this.x<this.tgt.x) {
+  if (this.x+32<this.tgt.x) {
     this.x++}
+  if (this.tgt.strike==16&&dist(this,this.tgt)<=32) {this.destroy()}
   for (oc=0;oc<objects.length;oc++) {
     if (objects[oc]!=this) {
       if (objects[oc].type=='fighter') {
         if (abs(objects[oc].x-this.x)<16
-          &&abs(objects[oc].y-this.y)<16) {this.health--}}}}
+          &&abs(objects[oc].y-this.y)<16) {}}}}
   if (this.health<=0) {this.destroy()}}
 Drone.prototype.destroy = function () {
   index = objects.indexOf(this)
@@ -191,7 +192,7 @@ function execute () {
 
     ctx.strokeStyle = '#665544'
 
-    if (Math.random()*500<1) {
+    if (objects.length<8) {
       objects.push(new Drone(Math.random()*W,Math.random()*H))}
 
     ctx.font = "12pt courier";
