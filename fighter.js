@@ -30,7 +30,10 @@ var k_down = false
 var k_left = false
 var k_right = false
 var k_ctrl = false
-var menupopup = 0
+var k_A = false
+var k_B = false
+var k_C = false
+
 
 function keydown(evt) {
   console.log('key: ',evt.key)
@@ -38,36 +41,39 @@ function keydown(evt) {
   if (evt.key == 'ArrowDown') {k_down = true}
   if (evt.key == 'ArrowLeft') {k_left = true}
   if (evt.key == 'ArrowRight') {k_right = true}
-  if (evt.key == 'Control') {k_ctrl = true}
-  if (evt.key == 'Shift') {
-    menupopup = 128
-    ship.cycle()
-  }
-  }
-
+  if (evt.key == 'Shift') {k_A = true}
+  if (evt.key == 'z') {k_B = true}
+  if (evt.key == 'x') {k_C = true}
+  if (evt.key == 'Control') {k_ctrl = true}}
 window.addEventListener('keydown',keydown,false)
+
 
 function keyup(evt) {
   if (evt.key == 'ArrowUp') {k_up = false}
   if (evt.key == 'ArrowDown') {k_down = false}
   if (evt.key == 'ArrowLeft') {k_left = false}
   if (evt.key == 'ArrowRight') {k_right = false}
+  if (evt.key == 'Shift') {k_A = false}
+  if (evt.key == 'z') {k_B = false}
+  if (evt.key == 'x') {k_C = false}
   if (evt.key == 'Control') {k_ctrl = false}}
 window.addEventListener('keyup',keyup,false)
 
 
 function Controller() {
   this.move = [0,0]
-  this.jump = 0}
+  this.jump = 0
+  this.punch = 0}
 Controller.prototype.update = function () {
   this.move = [0,0]
   this.jump = 0
+  this.punch = 0
   if (k_up) {this.move[1]=-1}
   if (k_down) {this.move[1]=1}
   if (k_left) {this.move[0]=-1}
   if (k_right) {this.move[0]=1}
   if (k_ctrl) {this.jump = 1}
-}
+  if (k_A) {this.punch = 1}}
 
 function PlayerBot() {}
 
@@ -111,11 +117,15 @@ function Fighter(inputs) {
   this.y = H/2
   this.z = 0
   this.zsp = 0
+  this.strike = 0
   this.health = 100}
 Fighter.prototype.update = function () {
   this.ctrl.update()
   this.x += this.ctrl.move[0]
   this.y += this.ctrl.move[1]
+  if (this.strike>0) {this.strike--}
+  if (this.strike==0) {
+    if (this.ctrl.punch) {this.strike = 16}}
   if (this.z==0) {
     if (this.ctrl.jump) {this.zsp = 10}}
   else if (this.z>0) {this.zsp--} 
@@ -134,6 +144,10 @@ Fighter.prototype.render = function () {
   ctx.beginPath();
   ctx.arc(this.x,this.y-this.z,16,0,2*Math.PI);
   ctx.fill()
+  ctx.strokeStyle = '#0000ff'
+  ctx.beginPath();
+  ctx.arc(this.x,this.y-this.z,16+this.strike,0,2*Math.PI);
+  ctx.stroke()
 }
 
 function Camera() {
@@ -168,7 +182,7 @@ function execute () {
 
     ctx.strokeStyle = '#665544'
 
-    if (Math.random()*20<1) {
+    if (Math.random()*1000<1) {
       objects.push(new Drone(Math.random()*W,Math.random()*H))}
 
     ctx.font = "12pt courier";

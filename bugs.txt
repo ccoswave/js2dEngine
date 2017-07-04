@@ -1,0 +1,5 @@
+
+----------------
+rightArrow + second arrow key seems to be blocking charcter keydown events
+console shows continuos keydown being generated as this occurs
+  > https://stackoverflow.com/questions/10265560/javascript-keydown-event-up-arrow-key-preventing-further-arrow-key-keydown-e
