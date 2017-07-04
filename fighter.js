@@ -200,6 +200,8 @@ function execute () {
       objects[o].update()}
     for (o=0;o<objects.length;o++) {
       objects[o].render()}
+    ctx.strokeRect(8,8,100,8)
+    ctx.fillRect(8,8,player1.health,8)
     t++
     setTimeout(loop,10)}
   loop()
