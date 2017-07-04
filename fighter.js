@@ -60,6 +60,13 @@ function keyup(evt) {
 window.addEventListener('keyup',keyup,false)
 
 
+var audio = new Audio('wntic.wav');
+
+
+
+
+
+
 function Controller() {
   this.move = [0,0]
   this.jump = 0
@@ -125,7 +132,9 @@ Fighter.prototype.update = function () {
   this.y += this.ctrl.move[1]
   if (this.strike>0) {this.strike--}
   if (this.strike==0) {
-    if (this.ctrl.punch) {this.strike = 16}}
+    if (this.ctrl.punch) {
+      audio.play();
+      this.strike = 16}}
   if (this.z==0) {
     if (this.ctrl.jump) {this.zsp = 10}}
   else if (this.z>0) {this.zsp--} 
@@ -182,7 +191,7 @@ function execute () {
 
     ctx.strokeStyle = '#665544'
 
-    if (Math.random()*1000<1) {
+    if (Math.random()*500<1) {
       objects.push(new Drone(Math.random()*W,Math.random()*H))}
 
     ctx.font = "12pt courier";
