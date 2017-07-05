@@ -90,9 +90,14 @@ function Drone(x,y) {
   this.y = y
   this.z = 0
   this.zsp = 0
+  this.strike = 0
   this.tgt = player1
   this.health = 20}
 Drone.prototype.update = function () {
+  if (this.strike>0) {this.strike--}
+  if (this.strike==0) {
+      audio.play();
+      this.strike = 16}
   if (this.y>this.tgt.y) {
     this.y--}
   if (this.y<this.tgt.y) {
@@ -101,7 +106,7 @@ Drone.prototype.update = function () {
     this.x--}
   if (this.x+32<this.tgt.x) {
     this.x++}
-  if (this.tgt.strike==16&&dist(this,this.tgt)<=32) {this.destroy()}
+  if (this.tgt.strike==16&&dist(this,this.tgt)<=32) {this.health-=10}
   for (oc=0;oc<objects.length;oc++) {
     if (objects[oc]!=this) {
       if (objects[oc].type=='fighter') {
@@ -116,6 +121,10 @@ Drone.prototype.render = function () {
   ctx.beginPath();
   ctx.arc(this.x,this.y-this.z,16,0,2*Math.PI);
   ctx.fill()
+  ctx.strokeStyle = '#ff0000'
+  ctx.beginPath();
+  ctx.arc(this.x,this.y-this.z,16+this.strike,0,2*Math.PI);
+  ctx.stroke()
 }
 
 function Fighter(inputs) {
@@ -143,6 +152,10 @@ Fighter.prototype.update = function () {
   if (this.z<0) {
     this.zsp=0
     this.z=0}
+  for (oc=0;oc<objects.length;oc++) {
+    tgt = objects[oc]
+    if (tgt.strike==16&&dist(this,tgt)<=32) {this.health-=10}}
+  
   for (oc=0;oc<objects.length;oc++) {
     if (objects[oc]!=this) {
       if (objects[oc].type=='drone') {
@@ -203,7 +216,7 @@ function execute () {
     ctx.strokeRect(8,8,100,8)
     ctx.fillRect(8,8,player1.health,8)
     t++
-    setTimeout(loop,10)}
+    setTimeout(loop,30)}
   loop()
 }
 execute()
