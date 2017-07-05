@@ -34,17 +34,28 @@ var k_A = false
 var k_B = false
 var k_C = false
 
+var k_ctrl_down = false
+var k_A_down = false
+
+function resetKeys () {
+  k_ctrl_down = false
+  k_A_down = false
+}
 
 function keydown(evt) {
   console.log('key: ',evt.key)
-  if (evt.key == 'ArrowUp') {k_up = true}
-  if (evt.key == 'ArrowDown') {k_down = true}
-  if (evt.key == 'ArrowLeft') {k_left = true}
-  if (evt.key == 'ArrowRight') {k_right = true}
-  if (evt.key == 'Shift') {k_A = true}
-  if (evt.key == 'z') {k_B = true}
-  if (evt.key == 'x') {k_C = true}
-  if (evt.key == 'Control') {k_ctrl = true}}
+  if (evt.key == 'ArrowUp'&&!k_up) {k_up = true}
+  if (evt.key == 'ArrowDown'&&!k_down) {k_down = true}
+  if (evt.key == 'ArrowLeft'&&!k_left) {k_left = true}
+  if (evt.key == 'ArrowRight'&&!k_right) {k_right = true}
+  if (evt.key == 'Shift'&&!k_A) {
+    k_A = true
+    k_A_down = true}
+  if (evt.key == 'z'&&!k_B) {k_B = true}
+  if (evt.key == 'x'&&!k_C) {k_C = true}
+  if (evt.key == 'Control'&&!k_ctrl) {
+    k_ctrl = true
+    k_ctrl_down = true}}
 window.addEventListener('keydown',keydown,false)
 
 
@@ -80,7 +91,8 @@ Controller.prototype.update = function () {
   if (k_left) {this.move[0]=-1}
   if (k_right) {this.move[0]=1}
   if (k_ctrl) {this.jump = 1}
-  if (k_A) {this.punch = 1}}
+  if (k_A_down) {this.punch = 1}
+  }
 
 function PlayerBot() {}
 
@@ -92,26 +104,32 @@ function Drone(x,y) {
   this.zsp = 0
   this.strike = 0
   this.tgt = player1
-  this.health = 20}
+  this.health = 20
+  this.stop = 0}
 Drone.prototype.update = function () {
   if (this.strike>0) {this.strike--}
   if (this.strike==0) {
       audio.play();
       this.strike = 16}
-  if (this.y>this.tgt.y) {
-    this.y--}
-  if (this.y<this.tgt.y) {
-    this.y++}
-  if (this.x-32>this.tgt.x) {
-    this.x--}
-  if (this.x+32<this.tgt.x) {
-    this.x++}
+  if (this.stop==0) {
+    if (this.y>this.tgt.y) {
+      this.y--}
+    if (this.y<this.tgt.y) {
+      this.y++}
+    if (this.x-32>this.tgt.x) {
+      this.x--}
+    if (this.x+32<this.tgt.x) {
+      this.x++}}
   if (this.tgt.strike==16&&dist(this,this.tgt)<=32) {this.health-=10}
   for (oc=0;oc<objects.length;oc++) {
-    if (objects[oc]!=this) {
-      if (objects[oc].type=='fighter') {
-        if (abs(objects[oc].x-this.x)<16
-          &&abs(objects[oc].y-this.y)<16) {}}}}
+    tgt = objects[oc]
+    if (tgt!=this) {
+      if (tgt.type=='fighter') {
+        if (abs(tgt.x-this.x)<16
+          &&abs(tgt.y-this.y)<16) {}}
+          else {
+            if (dist(this,tgt)<32) {this.stop = 1}
+          }}}
   if (this.health<=0) {this.destroy()}}
 Drone.prototype.destroy = function () {
   index = objects.indexOf(this)
@@ -138,13 +156,13 @@ function Fighter(inputs) {
   this.health = 100}
 Fighter.prototype.update = function () {
   this.ctrl.update()
-  this.x += this.ctrl.move[0]
-  this.y += this.ctrl.move[1]
+  this.x += this.ctrl.move[0]*2
+  this.y += this.ctrl.move[1]*2
   if (this.strike>0) {this.strike--}
-  if (this.strike==0) {
-    if (this.ctrl.punch) {
-      audio.play();
-      this.strike = 16}}
+  //if (this.strike==0) {
+  if (this.ctrl.punch) {
+    audio.play();
+    this.strike = 16}
   if (this.z==0) {
     if (this.ctrl.jump) {this.zsp = 10}}
   else if (this.z>0) {this.zsp--} 
@@ -154,13 +172,13 @@ Fighter.prototype.update = function () {
     this.z=0}
   for (oc=0;oc<objects.length;oc++) {
     tgt = objects[oc]
-    if (tgt.strike==16&&dist(this,tgt)<=32) {this.health-=10}}
+    if (tgt!=this&&tgt.strike==16&&dist(this,tgt)<=32) {this.health-=10}}
   
   for (oc=0;oc<objects.length;oc++) {
     if (objects[oc]!=this) {
       if (objects[oc].type=='drone') {
         if (abs(objects[oc].x-this.x)<16
-          &&abs(objects[oc].y-this.y)<16) {this.health--}}}}
+          &&abs(objects[oc].y-this.y)<16) {}}}}
   if (this.health<=0) {this.x=0;this.y=0;reset()}}
 Fighter.prototype.render = function () {
   ctx.fillStyle = '#0000ff'
@@ -194,7 +212,6 @@ objects.push(player1)
 
 function execute () {
   function loop () {
-    
     ctx.lineCap = 'round';
     ctx.lineWidth = 2
     ctx.strokeStyle = '#332722'
@@ -213,8 +230,11 @@ function execute () {
       objects[o].update()}
     for (o=0;o<objects.length;o++) {
       objects[o].render()}
+    ctx.fillStyle = '#00ff00'
+    ctx.strokeStyle = '#0000ff'
     ctx.strokeRect(8,8,100,8)
     ctx.fillRect(8,8,player1.health,8)
+    resetKeys()
     t++
     setTimeout(loop,30)}
   loop()
